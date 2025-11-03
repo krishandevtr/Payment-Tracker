@@ -1,0 +1,66 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: payment-tracker
+build:
+  artifacts:
+    - image: auth-service
+      context: Auth
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: "/app/src"
+    - image: payment-service
+      context: Payment
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: "/app/src"
+    - image: budget-service
+      context: Budget
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: "/app/src"
+    - image: api-gateway
+      context: Gateway
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: "/app/src"
+manifests:
+  rawYaml:
+    - infra/k8s/auth.yaml
+    - infra/k8s/payment.yaml
+    - infra/k8s/budget.yaml
+    - infra/k8s/gateway.yaml
+    - infra/k8s/redis.yaml
+portForward:
+  - resourceType: service
+    resourceName: gateway-svc
+    namespace: default
+    port: 4000
+    localPort: 4000
+  - resourceType: service
+    resourceName: auth-svc
+    namespace: default
+    port: 4003
+    localPort: 4003
+  - resourceType: service
+    resourceName: payment-svc
+    namespace: default
+    port: 4001
+    localPort: 4001
+  - resourceType: service
+    resourceName: budget-svc
+    namespace: default
+    port: 4002
+    localPort: 4002

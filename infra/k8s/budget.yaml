@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: budget-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: budget
+  template:
+    metadata:
+      labels:
+        app: budget
+    spec:
+      containers:
+        - name: budget
+          image: budget-service
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "4002"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+          ports:
+            - containerPort: 4002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: budget-svc
+spec:
+  selector:
+    app: budget
+  ports:
+    - name: http
+      port: 4002
+      targetPort: 4002
